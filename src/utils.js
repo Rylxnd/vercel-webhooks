@@ -1,18 +1,16 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const getRawBody = require('raw-body');
 
 /**
  * Verifies the Vercel signature on a request
  * @param req The request to verify
  * @returns Whether the signature is valid
  */
-module.exports.verifySignature = req => {
-	const payload = req.body.payload;
-	const signature = crypto
-		.createHmac('sha1', process.env.VERCEL_SECRET)
-		.update(payload)
-		.digest('hex');
-	return signature === req.headers['x-vercel-signature'];
+module.exports.verifySignature = async req => {
+	const rawBody = await getRawBody(req);
+	const bodySignature = crypto.sign('sha1', rawBody, process.env.VERCEL_SECRET);
+	return bodySignature === req.headers['x-vercel-signature'];
 };
 
 /**

@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post('/webhooks', async (req, res) => {
 	if (!req.headers['x-vercel-signature']) return res.sendStatus(401);
-	if (!verifySignature(res)) return res.sendStatus(403);
+	if (!(await verifySignature(res))) return res.sendStatus(403);
 
 	const payload = req.body.payload;
 
