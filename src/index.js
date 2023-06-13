@@ -53,7 +53,7 @@ app.post('/webhooks', async (req, res) => {
 			embed.color = 16766011;
 			break;
 		default:
-			return res.sendStatus(202);
+			return res.sendStatus(201);
 	}
 
 	await sendDiscordWebhook({ embeds: [embed] });
