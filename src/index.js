@@ -14,7 +14,8 @@ app.post('/webhooks', async (req, res) => {
 	if (!req.headers['x-vercel-signature']) return res.sendStatus(401);
 	const rawBody = await getRawBody(req);
 	if (!(await verifySignature(rawBody, req))) return res.sendStatus(403);
-	const payload = JSON.parse(rawBody.toString('utf-8')).payload
+	const body = JSON.parse(rawBody.toString('utf-8'))
+	const payload = body.payload
 console.log(payload)
 	const embed = {
 		title: '',
@@ -36,7 +37,7 @@ console.log(payload)
 		],
 	};
 
-	switch (req.body.type) {
+	switch (body.type) {
 		case 'deployment.created':
 			embed.title = 'Deployment Created';
 			embed.color = 5090295;
