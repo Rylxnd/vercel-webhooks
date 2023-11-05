@@ -16,7 +16,6 @@ app.post('/webhooks', async (req, res) => {
 	if (!(await verifySignature(rawBody, req))) return res.sendStatus(403);
 	const body = JSON.parse(rawBody.toString('utf-8'))
 	const payload = body.payload
-console.log(payload)
 	const embed = {
 		title: '',
 		description: '',

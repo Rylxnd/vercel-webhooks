@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 
 /**
@@ -18,8 +18,7 @@ module.exports.verifySignature = async (rawBody, req) => {
  * @returns The fetch response
  */
 module.exports.sendDiscordWebhook = async body => {
-	return await fetch(process.env.DISCORD_WEBHOOK, {
-		method: 'POST',
-		body: JSON.stringify(body),
-	});
+	console.log(body)
+	console.log(process.env.DISCORD_WEBHOOK)
+	return await axios.post(process.env.DISCORD_WEBHOOK, JSON.stringify(body));
 };
