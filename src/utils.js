@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const getRawBody = require('raw-body');
+const contentType = require('content-type')
 
 /**
  * Verifies the Vercel signature on a request
@@ -8,14 +9,10 @@ const getRawBody = require('raw-body');
  * @returns Whether the signature is valid
  */
 module.exports.verifySignature = async req => {
-	console.log('2.2')
-	const rawBody = await getRawBody(req).catch(console.log)
-	console.log('2.3')
-	const bodySignature = crypto.createHmac('sha1', process.env.VERCEL_SECRET).update(rawBody).digest('hex')
-	console.log('2.4')
+	const rawBody = await getRawBody(req);
+	const bodySignature = crypto.sign('sha1', rawBody, process.env.VERCEL_SECRET);
 	return bodySignature === req.headers['x-vercel-signature'];
-};
-
+}
 /**
  * Sends a discord webhook
  * @param body The request body
