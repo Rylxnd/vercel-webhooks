@@ -14,7 +14,7 @@ app.post('/webhooks', async (req, res) => {
 	if (!req.headers['x-vercel-signature']) return res.sendStatus(401);
 	const rawBody = await getRawBody(req);
 	if (!(await verifySignature(rawBody, req))) return res.sendStatus(403);
-	const payload = JSON.parse(rawBody.toString('utf-8'));
+	const payload = JSON.parse(rawBody.toString('utf-8')).payload
 console.log(payload)
 	const embed = {
 		title: '',
