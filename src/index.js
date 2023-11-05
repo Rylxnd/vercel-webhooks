@@ -17,8 +17,6 @@ app.post('/webhooks', async (req, res) => {
 	const body = JSON.parse(rawBody.toString('utf-8'))
 	const payload = body.payload
 	const embed = {
-		title: 'Deployment',
-		description: '',
 		footer: { text: `Deployment ID: ${payload.id}` },
 		timestamp: new Date().toISOString(),
 		url: payload.deployment.url,
