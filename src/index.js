@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { verifySignature, sendDiscordWebhook } = require('./utils');
+const getRawBody = require('raw-body');
 
 const app = express();
 
@@ -11,10 +12,9 @@ const PORT = process.env.PORT || 4000;
 
 app.post('/webhooks', async (req, res) => {
 	if (!req.headers['x-vercel-signature']) return res.sendStatus(401);
-	console.log('1')
-	if (!(await verifySignature(req))) return res.sendStatus(403);
-console.log('2')
-	const payload = req.body.payload;
+	const rawBody = await getRawBody(req);
+	if (!(await verifySignature(rawBody, req))) return res.sendStatus(403);
+	const payload = JSON.parse(rawBody.toString('utf-8'));
 
 	const embed = {
 		title: '',
