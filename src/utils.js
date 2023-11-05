@@ -20,6 +20,6 @@ module.exports.verifySignature = async (rawBody, req) => {
 module.exports.sendDiscordWebhook = async body => {
 	return await fetch(process.env.DISCORD_WEBHOOK, {
 		method: 'POST',
-		body: JSON.stringify(data),
+		body: JSON.stringify(body),
 	});
 };
