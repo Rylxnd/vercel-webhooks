@@ -18,7 +18,5 @@ module.exports.verifySignature = async (rawBody, req) => {
  * @returns The fetch response
  */
 module.exports.sendDiscordWebhook = async body => {
-	console.log(body)
-	console.log(process.env.DISCORD_WEBHOOK)
 	return await axios.post(process.env.DISCORD_WEBHOOK, body);
 };
