@@ -10,7 +10,7 @@ const contentType = require('content-type')
  */
 module.exports.verifySignature = async req => {
 	const rawBody = await getRawBody(req);
-	const bodySignature = crypto.sign('sha1', rawBody, process.env.VERCEL_SECRET);
+	const bodySignature = crypto.createHmac('sha1', process.env.VERCEL_SECRET).update(rawBody).digest('hex');
 	return bodySignature === req.headers['x-vercel-signature'];
 }
 /**
