@@ -8,8 +8,11 @@ const getRawBody = require('raw-body');
  * @returns Whether the signature is valid
  */
 module.exports.verifySignature = async req => {
+	console.log(req)
 	const rawBody = await getRawBody(req);
+	console.log(rawBody)
 	const bodySignature = crypto.sign('sha1', rawBody, process.env.VERCEL_SECRET);
+	console.log(bodySignature)
 	return bodySignature === req.headers['x-vercel-signature'];
 };
 
