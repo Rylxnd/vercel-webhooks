@@ -19,7 +19,7 @@ app.post('/webhooks', async (req, res) => {
 	const embed = {
 		footer: { text: `Deployment ID: ${payload.id}` },
 		timestamp: new Date().toISOString(),
-		url: payload.deployment.url,
+		url: `https://${payload.deployment.url}`,
 		fields: [
 			{
 				name: 'Project',
@@ -28,7 +28,7 @@ app.post('/webhooks', async (req, res) => {
 			},
 			{
 				name: 'Target',
-				value: payload.target,
+				value: `${payload.target || 'none'}`,
 				inline: true,
 			},
 		],
