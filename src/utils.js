@@ -7,7 +7,7 @@ const axios = require('axios');
  * @param req The request to verify
  * @returns Whether the signature is valid
  */
-module.exports.verifySignature = async (rawBody, req) => {
+module.exports.verifyVercelSignature = async (rawBody, req) => {
 
 	const bodySignature = crypto.createHmac('sha1', process.env.VERCEL_SECRET).update(rawBody).digest('hex');
 	return bodySignature === req.headers['x-vercel-signature'];
