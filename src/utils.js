@@ -1,7 +1,5 @@
 const crypto = require('crypto');
 const axios = require('axios');
-const { urlencoded } = require('express');
-const { URLSearchParams } = require('url');
 
 var trelloWebhookId = "";
 
@@ -16,15 +14,18 @@ module.exports.verifyVercelSignature = async (rawBody, req) => {
 	return bodySignature === req.headers['x-vercel-signature'];
 }
 
+module.exports.verifyTrelloSignature = async (jsonBody, req) => {
+	const sig = crypto.createHmac("sha1", process.env.TRELLO_API_SECRET).update(JSON.stringify(jsonBody) + process.env.TRELLO_CALLBACK_URL).digest("base64");
+	return sig === req.headers['x-trello-webhook'];
+}
+
 /**
  * Sends a discord webhook
  * @param body The request body
  * @returns The fetch response
  */
-module.exports.sendDiscordWebhook = async (body) => {
-	console.log(body)
-	console.log( JSON.stringify(body))
-	return await axios.post(process.env.DISCORD_WEBHOOK, body, {
+module.exports.sendDiscordWebhook = async (body, webhook) => {
+	return await axios.post(webhook, body, {
 		headers: {
 			"content-type": "application/json"
 		}
@@ -36,7 +37,7 @@ const deleteTrelloWebhook = async (id) => {
 		await axios.delete(`https://api.trello.com/1/webhooks/${id}?key=APIKey&token=APIToken`, {
 			params: {
 				key: process.env.TRELLO_API_KEY,
-				token: process.env.TRELLO_API_SECRET
+				token: process.env.TRELLO_API_TOKEN
 			}
 		});
 	}
@@ -56,12 +57,12 @@ const deleteTrelloWebhook = async (id) => {
  */
 module.exports.registerTrelloWebhook = async () => {
 	// check if we already have a registered webhook
-	var webhooks = await axios.get(`https://api.trello.com/1/tokens/${process.env.TRELLO_API_SECRET}/webhooks`, {
+	var webhooks = (await axios.get(`https://api.trello.com/1/tokens/${process.env.TRELLO_API_TOKEN}/webhooks`, {
 		params: {
 			key: process.env.TRELLO_API_KEY,
-			token: process.env.TRELLO_API_SECRET
+			token: process.env.TRELLO_API_TOKEN
 		}
-	}).data;
+	})).data;
 
 	for (var webhook of webhooks) {
 		if (webhook.active != true) {
@@ -81,7 +82,7 @@ module.exports.registerTrelloWebhook = async () => {
 		var res = await axios.post('https://api.trello.com/1/webhooks/', null, {
 			params: {
 				key: process.env.TRELLO_API_KEY,
-				token: process.env.TRELLO_API_SECRET,
+				token: process.env.TRELLO_API_TOKEN,
 				callbackURL: process.env.TRELLO_CALLBACK_URL,
 				idModel: process.env.TRELLO_BOARD_MODEL,
 			}
