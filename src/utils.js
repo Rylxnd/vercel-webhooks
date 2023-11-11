@@ -1,8 +1,6 @@
 const crypto = require('crypto');
 const axios = require('axios');
 
-var trelloWebhookId = "";
-
 /**
  * Verifies the Vercel signature on a request
  * @param rawBody The request body to sign
@@ -84,14 +82,13 @@ module.exports.registerTrelloWebhook = async () => {
 
 		if (webhook.idModel == process.env.TRELLO_BOARD_MODEL && webhook.callbackURL == process.env.TRELLO_CALLBACK_URL) {
 			// we already have a webhook for the board model registered to the callback
-			trelloWebhookId = webhook.id;
 			return;
 		}
 	}
 
 	// create a new webhook
 	try {
-		var res = await axios.post('https://api.trello.com/1/webhooks/', null, {
+		await axios.post('https://api.trello.com/1/webhooks/', null, {
 			params: {
 				key: process.env.TRELLO_API_KEY,
 				token: process.env.TRELLO_API_TOKEN,
@@ -99,8 +96,6 @@ module.exports.registerTrelloWebhook = async () => {
 				idModel: process.env.TRELLO_BOARD_MODEL,
 			}
 		});
-
-		trelloWebhookId = res.data.id;
 	} catch (error) {
 		console.log(`Failed to create Trello webhook! Status: ${error.status}`);
 	}
