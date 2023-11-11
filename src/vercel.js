@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
 			return res.sendStatus(201);
 	}
 
-	await sendDiscordWebhook({ embeds: [embed] }, process.env.DISCORD_WEBHOOK);
+	await sendDiscordWebhook({ embeds: [embed] }, process.env.VERCEL_DISCORD_WEBHOOK);
 
 	res.sendStatus(201);
 });

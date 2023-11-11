@@ -131,7 +131,7 @@ router.post('/', async (req, res) => {
 
     embed.title = embed.title.concat(` - ${model.name}`);
 
-    await sendDiscordWebhook({embeds: [embed]}, process.env.TRELLO_WEBHOOK);
+    await sendDiscordWebhook({embeds: [embed]}, process.env.TRELLO_DISCORD_WEBHOOK);
 
     return res.sendStatus(201);
 });
