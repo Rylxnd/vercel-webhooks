@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const { registerTrelloWebhook } = require('./utils.js');
 
 const vercel = require('./vercel.js');
 
@@ -14,6 +15,6 @@ app.use('/webhooks/vercel', vercel);
 
 app.post('/webhooks/trello', async (req, res) => {
 
-})
-
 app.listen(PORT, () => console.log(`Listening at http://localhost:${PORT}`));
+
+registerTrelloWebhook();
