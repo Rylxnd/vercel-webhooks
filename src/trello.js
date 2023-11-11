@@ -4,26 +4,12 @@ const { verifyTrelloSignature, sendDiscordWebhook } = require('./utils');
 
 const router = express.Router();
 
-const blacklistedUpdates = [
-    'action_moved_card_lower', 
-    'action_moved_card_higher',
-    'unknown'
-];
-
-const friendlyNames = { 
-    "name": "Name", 
-    "desc": "Description" 
-};
-
 router.post('/', async (req, res) => {
-    //console.log(req.body);
     if (!req.headers['x-trello-webhook']) return res.sendStatus(401);
     if (!(await verifyTrelloSignature(req.body, req))) return res.sendStatus(403);
 
     const action = req.body.action;
     const model = req.body.model;
-
-    console.log(req.body.action);
 
     const embed = {
 		footer: { text: `Action ID: ${action.id}` },
@@ -144,10 +130,7 @@ router.post('/', async (req, res) => {
     }
 
     embed.title = embed.title.concat(` - ${model.name}`);
-    //console.log(action);
-    //console.log(embed);
 
-    console.log(embed);
     await sendDiscordWebhook({embeds: [embed]}, process.env.TRELLO_WEBHOOK);
 
     return res.sendStatus(201);

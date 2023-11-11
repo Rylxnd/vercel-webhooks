@@ -5,6 +5,7 @@ var trelloWebhookId = "";
 
 /**
  * Verifies the Vercel signature on a request
+ * @param rawBody The request body to sign
  * @param req The request to verify
  * @returns Whether the signature is valid
  */
@@ -14,6 +15,12 @@ module.exports.verifyVercelSignature = async (rawBody, req) => {
 	return bodySignature === req.headers['x-vercel-signature'];
 }
 
+/**
+ * Verifies the Trello signature on a request
+ * @param jsonBody The request body to sign
+ * @param req The request to verify
+ * @returns Whether the signature is valid
+ */
 module.exports.verifyTrelloSignature = async (jsonBody, req) => {
 	const sig = crypto.createHmac("sha1", process.env.TRELLO_API_SECRET).update(JSON.stringify(jsonBody) + process.env.TRELLO_CALLBACK_URL).digest("base64");
 	return sig === req.headers['x-trello-webhook'];
@@ -22,6 +29,7 @@ module.exports.verifyTrelloSignature = async (jsonBody, req) => {
 /**
  * Sends a discord webhook
  * @param body The request body
+ * @param webhook The webhook URL
  * @returns The fetch response
  */
 module.exports.sendDiscordWebhook = async (body, webhook) => {
@@ -32,6 +40,10 @@ module.exports.sendDiscordWebhook = async (body, webhook) => {
 	});
 };
 
+/**
+ * Deletes a Trello webhook
+ * @param id ID of the webhook to delete
+ */
 const deleteTrelloWebhook = async (id) => {
 	try {
 		await axios.delete(`https://api.trello.com/1/webhooks/${id}?key=APIKey&token=APIToken`, {
