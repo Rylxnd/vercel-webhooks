@@ -61,7 +61,7 @@ const deleteTrelloWebhook = async (id) => {
 /**
  * Registers the trello webhook to the callbackURL and board ID
  * 
- * If a webhook is found that already matches callbackURL and board id
+ * If a webhook is found that already matches callbackURL and board model
  * then we do nothing.
  * 
  * NOTE: Make sure the server is running before calling. 
