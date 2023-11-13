@@ -97,6 +97,7 @@ module.exports.registerTrelloWebhook = async () => {
 			}
 		});
 	} catch (error) {
+		console.log(error)
 		console.log(`Failed to create Trello webhook! Status: ${error.status}`);
 	}
 }
