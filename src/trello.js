@@ -4,7 +4,7 @@ const { verifyTrelloSignature, sendDiscordWebhook } = require('./utils');
 
 const router = express.Router();
 
-router.get('/' (req,res) => {
+router.get('/', (req,res) => {
     res.sendStatus(200)
 })
 
