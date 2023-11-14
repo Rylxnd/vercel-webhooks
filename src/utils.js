@@ -56,6 +56,7 @@ module.exports.sendDiscordWebhook = async (body, webhook) => {
 const deleteTrelloWebhook = async (id) => {
 	try {
 		await axios.delete(`https://api.trello.com/1/webhooks/${id}?key=APIKey&token=APIToken`, {
+		await axios.delete(`https://api.trello.com/1/webhooks/${id}`, {
 			params: {
 				key: process.env.TRELLO_API_KEY,
 				token: process.env.TRELLO_API_TOKEN
