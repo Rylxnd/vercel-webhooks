@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { verifyTrelloSignature, sendDiscordWebhook } = require('./utils');
+const { verifyTrelloSignature, sendDiscordWebhook, config } = require('./utils');
 const axios = require('axios');
 
 const router = express.Router();
@@ -9,7 +9,7 @@ const imageRegex = /^.*\.(jpg|jpeg|png|gif|bmp|tiff|tif)$/;
 
 router.post('/', async (req, res) => {
     if (!req.headers['x-trello-webhook']) return res.sendStatus(401);
-    if (!(await verifyTrelloSignature(req.body, req))) return res.sendStatus(403);
+    if (!(await verifyTrelloSignature(req))) return res.sendStatus(403);
 
     const action = req.body.action;
     const model = req.body.model;
@@ -136,7 +136,7 @@ router.post('/', async (req, res) => {
 
     embed.title = embed.title.concat(` - ${model.name}`);
 
-    await sendDiscordWebhook({embeds: [embed]}, process.env.TRELLO_DISCORD_WEBHOOK);
+    await sendDiscordWebhook({embeds: [embed]}, config.trello.boards.find((b) => b.id == model.id).webhook);
 
     return res.sendStatus(201);
 });

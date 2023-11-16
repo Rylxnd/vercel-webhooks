@@ -1,15 +1,11 @@
 const crypto = require('crypto');
 const axios = require('axios');
 
-module.exports.trelloConfig = {};
+module.exports.config = require('../config.json');
 
-const initTrelloConfig = async () => {
-	var boards = process.env.TRELLO_BOARD_MODEL.split(',');
-	var webhooks = prcoess.env.TRELLO_DISCORD_WEBHOOK.split(',');
-
-	for (var i = 0; i < boards.length; i++) {
-		this.trelloConfig[boards[i]] = webhooks[i];
-	}
+const getFullRequestURL = (req) => {
+	const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+	return url;
 }
 
 /**
@@ -26,12 +22,11 @@ module.exports.verifyVercelSignature = async (rawBody, req) => {
 
 /**
  * Verifies the Trello signature on a request
- * @param jsonBody The request body to sign
  * @param req The request to verify
  * @returns Whether the signature is valid
  */
-module.exports.verifyTrelloSignature = async (jsonBody, req) => {
-	const sig = crypto.createHmac("sha1", process.env.TRELLO_API_SECRET).update(JSON.stringify(jsonBody) + process.env.TRELLO_CALLBACK_URL).digest("base64");
+module.exports.verifyTrelloSignature = async (req) => {
+	const sig = crypto.createHmac("sha1", process.env.TRELLO_API_SECRET).update(JSON.stringify(req.body) + getFullRequestURL(req)).digest("base64");
 	return sig === req.headers['x-trello-webhook'];
 }
 
@@ -42,11 +37,16 @@ module.exports.verifyTrelloSignature = async (jsonBody, req) => {
  * @returns The fetch response
  */
 module.exports.sendDiscordWebhook = async (body, webhook) => {
-	return await axios.post(webhook, body, {
-		headers: {
-			"content-type": "application/json"
-		}
-	});
+	try {
+		return await axios.post(webhook, body, {
+			headers: {
+				"content-type": "application/json"
+			}
+		});	
+	} catch (error) {
+		console.log(error);
+		console.log("error sending discord embed ^");
+	}
 };
 
 /**
@@ -55,7 +55,6 @@ module.exports.sendDiscordWebhook = async (body, webhook) => {
  */
 const deleteTrelloWebhook = async (id) => {
 	try {
-		await axios.delete(`https://api.trello.com/1/webhooks/${id}?key=APIKey&token=APIToken`, {
 		await axios.delete(`https://api.trello.com/1/webhooks/${id}`, {
 			params: {
 				key: process.env.TRELLO_API_KEY,
@@ -78,8 +77,6 @@ const deleteTrelloWebhook = async (id) => {
  * Since the Trello API does a HEAD request to verify the callbackURL 
  */
 module.exports.registerTrelloWebhooks = async () => {
-	initTrelloConfig();
-
 	// check if we already have a registered webhook
 	var webhooks = (await axios.get(`https://api.trello.com/1/tokens/${process.env.TRELLO_API_TOKEN}/webhooks`, {
 		params: {
@@ -88,9 +85,9 @@ module.exports.registerTrelloWebhooks = async () => {
 		}
 	})).data;
 
-	for (var board of Object.keys(this.trelloConfig)) {
+	for (let board of this.config.trello.boards) {
 		let rwh;
-		if ((rwh = webhooks.find((w) => board == w.idModel))) {
+		if ((rwh = webhooks.find((w) => board.id == w.idModel))) {
 			if (!rwh.callbackURL.includes(process.env.TRELLO_CALLBACK_URL)) {
 				await deleteTrelloWebhook(rwh.id);
 			} else {
@@ -104,8 +101,8 @@ module.exports.registerTrelloWebhooks = async () => {
 				params: {
 					key: process.env.TRELLO_API_KEY,
 					token: process.env.TRELLO_API_TOKEN,
-					callbackURL: process.env.TRELLO_CALLBACK_URL.concat(`?m=${board}`),
-					idModel: board,
+					callbackURL: process.env.TRELLO_CALLBACK_URL.concat(`?m=${board.id}`), // the param is trivial. but idk if their api will error if it is the exact same callbackURL
+					idModel: board.id,
 				}
 			});
 		} catch (error) {
