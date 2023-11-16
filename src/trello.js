@@ -7,7 +7,7 @@ const router = express.Router();
 
 const imageRegex = /^.*\.(jpg|jpeg|png|gif|bmp|tiff|tif)$/;
 
-router.post('/', async (req, res) => {
+router.post('/', express.json(), async (req, res) => {
     if (!req.headers['x-trello-webhook']) return res.sendStatus(401);
     if (!(await verifyTrelloSignature(req))) return res.sendStatus(403);
 
