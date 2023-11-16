@@ -1,13 +1,15 @@
 require('dotenv').config();
 const express = require('express');
-const { verifyTrelloSignature, sendDiscordWebhook } = require('./utils');
+const { verifyTrelloSignature, sendDiscordWebhook, config } = require('./utils');
+const axios = require('axios');
 
 const router = express.Router();
 
+const imageRegex = /^.*\.(jpg|jpeg|png|gif|bmp|tiff|tif)$/;
 
 router.post('/', express.json(), async (req, res) => {
     if (!req.headers['x-trello-webhook']) return res.sendStatus(401);
-    if (!(await verifyTrelloSignature(req.body, req))) return res.sendStatus(403);
+    if (!(await verifyTrelloSignature(req))) return res.sendStatus(403);
 
     const action = req.body.action;
     const model = req.body.model;
@@ -111,9 +113,11 @@ router.post('/', express.json(), async (req, res) => {
                 inline: false,
             });
 
-            embed.image = {
-                url: action.data.attachment.previewUrl,
-            };
+            if (imageRegex.test(action.data.attachment.name)) {
+                embed.image = {
+                    url: `${process.env.TRELLO_CALLBACK_URL}/attachmentProxy?source=${encodeURIComponent(action.data.attachment.url)}`,
+                };
+            }
 
             break;
         case 'commentCard':
@@ -132,9 +136,38 @@ router.post('/', express.json(), async (req, res) => {
 
     embed.title = embed.title.concat(` - ${model.name}`);
 
-    await sendDiscordWebhook({embeds: [embed]}, process.env.TRELLO_DISCORD_WEBHOOK);
+    await sendDiscordWebhook({embeds: [embed]}, config.trello.boards.find((b) => b.id == model.id).webhook);
 
     return res.sendStatus(201);
 });
+
+router.get('/attachmentProxy', async (req, res) => {
+    if (!req.query.source) return res.sendStatus(400);
+
+    const trelloUrlRegex = /^(https?:\/\/)?(?:www\.)?trello\.com\/.*$/;
+    const sourceUrl = decodeURIComponent(req.query.source);
+
+    if (!trelloUrlRegex.test(sourceUrl)) return res.sendStatus(422);
+
+    axios.get(sourceUrl, {
+        responseType: 'arraybuffer',
+        headers: {
+            'Authorization': `OAuth oauth_consumer_key="${process.env.TRELLO_API_KEY}", oauth_token="${process.env.TRELLO_API_TOKEN}"`
+        }
+    }).then((response) => {
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Content-Length', response.headers['content-length']);
+
+        res.end(response.data, 'binary');
+    }).catch((error) => {
+        console.log(error);
+        if (error.response) {
+            return res.sendStatus(error.response.status);
+        } else if (error.request) {
+            return res.sendStatus(504);
+        }
+        res.sendStatus(500);
+    });
+})
 
 module.exports = router;
